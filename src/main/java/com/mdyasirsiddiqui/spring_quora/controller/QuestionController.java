@@ -4,12 +4,11 @@ import com.mdyasirsiddiqui.spring_quora.dto.QuestionRequestDTO;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionResponseDTO;
 import com.mdyasirsiddiqui.spring_quora.service.IQuestionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/questions")
@@ -22,4 +21,19 @@ public class QuestionController {
                 .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
                 .doOnError(error -> System.out.println("Error creating question: " + error));
     }
+
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<QuestionResponseDTO>> getQuestionById(@PathVariable String id) {
+        return service.findQuestionById(id)
+                .map(response -> {
+                    log.info("Question fetched successfully: {}", response);
+                    return ResponseEntity.ok(response);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("No question found for id: {}", id);
+                    return Mono.just(ResponseEntity.notFound().build());
+                }))
+                .doOnError(error -> log.error("Unable to fetch question for id: {}", id, error));
+    }
+
 }
