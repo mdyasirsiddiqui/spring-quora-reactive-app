@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
 @Data@Builder@NoArgsConstructor@AllArgsConstructor
-@Document(collation = "questions")
+@Document(collection = "questions")
 public class Questions {
     @Id
     private String id;
@@ -24,7 +24,8 @@ public class Questions {
     private String title;
 
     private String content;
-    private Integer views;
+    @Builder.Default
+    private Integer views=0;
 
     @CreatedDate
     private LocalDateTime createdAt;

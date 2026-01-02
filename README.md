@@ -11,6 +11,7 @@ The project is designed as a foundation for building scalable, event‑driven sy
 ## 🚀 Features (Current & Planned)
 - REST API endpoint: `/api/questions`
     - **POST**: Create a new question with validation (`title`, `content`)
+- GET /{id}: Retrieve a question by its MongoDB _id with proper logging and error handling
 - DTOs with **Jakarta Validation** for input constraints
 - Reactive persistence with **Spring Data MongoDB Reactive**
 - Logging with **Slf4j**
@@ -44,6 +45,16 @@ The project is designed as a foundation for building scalable, event‑driven sy
 - Applied **DTO validation** (title/content length constraints)
 - Persisted data with **Reactive MongoDB Repository**
 - Established clean layered architecture (Controller → Service → Repository → Database)
+
+### v1.1.0
+✨ Added GET /api/questions/{id} endpoint to fetch a question by its unique identifier
+
+Improved logging for question retrieval (success and error cases)
+
+Enhanced error handling with 404 Not Found response when a question does not exist
+
+
+Updated service layer to support reactive query by ID using Mono<QuestionResponseDTO>
 
 
 -------

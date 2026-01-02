@@ -5,11 +5,17 @@ import com.mdyasirsiddiqui.spring_quora.dto.QuestionRequestDTO;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionResponseDTO;
 import com.mdyasirsiddiqui.spring_quora.models.Questions;
 import com.mdyasirsiddiqui.spring_quora.repository.QuestionRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+
+import static aQute.bnd.annotation.headers.Category.database;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuestionService implements IQuestionService{
@@ -26,4 +32,14 @@ public class QuestionService implements IQuestionService{
                 .doOnError(error -> System.out.println("Error creating question"+ error));
 
     }
+
+    @Override
+    public Mono<QuestionResponseDTO> findQuestionById(String id) {
+        return questionRepository.findById(id)
+                .switchIfEmpty(Mono.error(new RuntimeException("Question not found")))
+                .map(QuestionAdapter::modelToResponseDTO)
+                .doOnSuccess(response -> log.info("Question retrieved successfully:{}", response))
+                .doOnError(error ->log.error("error in fetching question:{}",error));
+    }
+
 }
