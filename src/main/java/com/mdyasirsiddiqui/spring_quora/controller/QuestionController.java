@@ -47,5 +47,12 @@ public class QuestionController {
         return service.searchQuestions(query,page,size);
     }
 
+    @GetMapping("/all")
+    public Flux<QuestionResponseDTO> getAllQuestions(
+            @RequestParam(required = false) String cursor,
+            @RequestParam int size)
+    {
+        return service.getAllQuestions(cursor, size);
+    }
 
 }
