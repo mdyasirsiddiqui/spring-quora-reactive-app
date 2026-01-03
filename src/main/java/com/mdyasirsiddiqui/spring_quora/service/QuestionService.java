@@ -8,9 +8,13 @@ import com.mdyasirsiddiqui.spring_quora.repository.QuestionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 
 import static aQute.bnd.annotation.headers.Category.database;
@@ -41,5 +45,17 @@ public class QuestionService implements IQuestionService{
                 .doOnSuccess(response -> log.info("Question retrieved successfully:{}", response))
                 .doOnError(error ->log.error("error in fetching question:{}",error));
     }
+
+    @Override
+    public Flux<QuestionResponseDTO> searchQuestions(String searchTerm, int offset, int page) { //offset->page, page->size or number of result per page
+        return questionRepository.findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset,page))
+                .switchIfEmpty(Flux.error(new RuntimeException("Question not found")))
+                .map(QuestionAdapter::modelToResponseDTO)
+                .doOnNext(response-> log.info("Question found sucessfully:{} ",response))
+                .doOnError(error -> log.info("error in fetching question:{}",error));
+
+
+    }
+
 
 }

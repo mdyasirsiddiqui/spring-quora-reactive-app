@@ -5,8 +5,10 @@ import com.mdyasirsiddiqui.spring_quora.dto.QuestionResponseDTO;
 import com.mdyasirsiddiqui.spring_quora.service.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.CodePointLength;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
@@ -14,9 +16,9 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/questions")
 public class QuestionController {
     private final IQuestionService service;
+
     @PostMapping
-    public Mono<QuestionResponseDTO> createQuestion(@RequestBody QuestionRequestDTO questionRequestDTO)
-    {
+    public Mono<QuestionResponseDTO> createQuestion(@RequestBody QuestionRequestDTO questionRequestDTO) {
         return service.createQuestion(questionRequestDTO)
                 .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
                 .doOnError(error -> System.out.println("Error creating question: " + error));
@@ -35,5 +37,15 @@ public class QuestionController {
                 }))
                 .doOnError(error -> log.error("Unable to fetch question for id: {}", id, error));
     }
+
+    @GetMapping("/search")
+    public Flux<QuestionResponseDTO> searchQuestion(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)
+    {
+        return service.searchQuestions(query,page,size);
+    }
+
 
 }

@@ -48,13 +48,15 @@ The project is designed as a foundation for building scalable, event‑driven sy
 
 ### v1.1.0
 ✨ Added GET /api/questions/{id} endpoint to fetch a question by its unique identifier
-
 Improved logging for question retrieval (success and error cases)
-
 Enhanced error handling with 404 Not Found response when a question does not exist
-
-
 Updated service layer to support reactive query by ID using Mono<QuestionResponseDTO>
+
+### v1.2.0
+✨ Added GET /api/questions/search endpoint to retrieve questions by title or content using offset-based pagination  
+🔍 Introduced support for `page` and `size` parameters to control pagination and result limits  
+
+
 
 
 -------
