@@ -10,8 +10,12 @@ The project is designed as a foundation for building scalable, event‑driven sy
 
 ## 🚀 Features (Current & Planned)
 - REST API endpoint: `/api/questions`
-    - **POST**: Create a new question with validation (`title`, `content`)
+    -**POST**: Create a new question with validation (`title`, `content`)
 - GET /{id}: Retrieve a question by its MongoDB _id with proper logging and error handling
+- - **GET /search**: Retrieve questions by `query` (title or content) with offset‑based pagination
+- **GET /all**: Retrieve all questions using cursor‑based pagination
+    - Validates and parses cursor values via `CursorUtils`
+
 - DTOs with **Jakarta Validation** for input constraints
 - Reactive persistence with **Spring Data MongoDB Reactive**
 - Logging with **Slf4j**
@@ -54,7 +58,13 @@ Updated service layer to support reactive query by ID using Mono<QuestionRespons
 
 ### v1.2.0
 ✨ Added GET /api/questions/search endpoint to retrieve questions by title or content using offset-based pagination  
-🔍 Introduced support for `page` and `size` parameters to control pagination and result limits  
+🔍 Introduced support for `page` and `size` parameters to control pagination and result limits
+### v1.3.0
+✨ Added GET /api/questions endpoint to retrieve all questions using cursor-based pagination  
+🔗 Introduced support for `cursor` and `size` parameters to enable efficient sequential data fetching  
+🛠 Improved query handling with validation and parsing of cursor values via `CursorUtils`   
+📈 Optimized retrieval logic to fetch questions created after the provided cursor timestamp
+
 
 
 
