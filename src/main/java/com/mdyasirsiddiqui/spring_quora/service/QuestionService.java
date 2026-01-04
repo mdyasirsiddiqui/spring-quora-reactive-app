@@ -69,6 +69,15 @@ public class QuestionService implements IQuestionService {
                     .doOnError(error -> log.info("error in fetching question:{}", error));
         }
     }
+
+    @Override
+    public Flux<QuestionResponseDTO> getQuestionsByTag(String tags, int size) {
+        Pageable pageable=PageRequest.of(0,size);
+        return questionRepository.findByTagsContainingIgnoreCase(tags,pageable)
+                .map(QuestionAdapter::modelToResponseDTO)
+                .doOnNext(response -> log.info("Question found sucessfully:{} ", response))
+                .doOnError(error -> log.info("error in fetching question:{}", error));
+    }
 }
 
 

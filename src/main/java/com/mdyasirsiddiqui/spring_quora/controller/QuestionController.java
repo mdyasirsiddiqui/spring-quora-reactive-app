@@ -52,7 +52,14 @@ public class QuestionController {
             @RequestParam(required = false) String cursor,
             @RequestParam int size)
     {
-        return service.getAllQuestions(cursor, size);
+        return service.getAllQuestions(cursor, size);//try to pagination response //tag based api
+    }
+
+    @GetMapping("/tag")
+    public Flux<QuestionResponseDTO> getAllQuestionsByTag(@RequestParam String tags,
+                                                          @RequestParam(defaultValue = "10") int size)
+    {
+            return service.getQuestionsByTag(tags,size);
     }
 
 }
