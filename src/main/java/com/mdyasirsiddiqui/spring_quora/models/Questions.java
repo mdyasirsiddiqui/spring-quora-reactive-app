@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data@Builder@NoArgsConstructor@AllArgsConstructor
 @Document(collection = "questions")
@@ -26,6 +27,8 @@ public class Questions {
     private String content;
     @Builder.Default
     private Integer views=0;
+
+    private List<String> tags;
 
     @CreatedDate
     private LocalDateTime createdAt;
