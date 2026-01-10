@@ -26,6 +26,7 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<QuestionResponseDTO>> getQuestionById(@PathVariable String id) {
+        log.info("fetching qustionfor given id ", id);
         return service.findQuestionById(id)
                 .map(response -> {
                     log.info("Question fetched successfully: {}", response);

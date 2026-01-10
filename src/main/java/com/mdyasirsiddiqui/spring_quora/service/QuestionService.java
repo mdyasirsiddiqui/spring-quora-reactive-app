@@ -3,7 +3,9 @@ package com.mdyasirsiddiqui.spring_quora.service;
 import com.mdyasirsiddiqui.spring_quora.adapter.QuestionAdapter;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionRequestDTO;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionResponseDTO;
+import com.mdyasirsiddiqui.spring_quora.events.ViewCountEvent;
 import com.mdyasirsiddiqui.spring_quora.models.Questions;
+import com.mdyasirsiddiqui.spring_quora.producer.KafkaEventProducer;
 import com.mdyasirsiddiqui.spring_quora.repository.QuestionRepository;
 import com.mdyasirsiddiqui.spring_quora.utils.CursorUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,8 @@ import java.time.LocalDateTime;
 public class QuestionService implements IQuestionService {
     private final QuestionRepository questionRepository;
 
+    private final KafkaEventProducer kafkaEventProducer;
+
     @Override
     public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
         Questions questions = QuestionAdapter.dtoTOQuestionModel(questionRequestDTO);
@@ -33,14 +37,27 @@ public class QuestionService implements IQuestionService {
                 .doOnError(error -> System.out.println("Error creating question" + error));
 
     }
+//
+//    @Override
+//    public Mono<QuestionResponseDTO> findQuestionById(String id) {
+//        return questionRepository.findById(id)
+//                .switchIfEmpty(Mono.error(new RuntimeException("Question not found")))
+//                .map(QuestionAdapter::modelToResponseDTO)
+//                .doOnSuccess(response -> log.info("Question retrieved successfully:{}", response))
+//                .doOnError(error -> log.error("error in fetching question:{}", error));
+//    }
 
     @Override
     public Mono<QuestionResponseDTO> findQuestionById(String id) {
         return questionRepository.findById(id)
                 .switchIfEmpty(Mono.error(new RuntimeException("Question not found")))
                 .map(QuestionAdapter::modelToResponseDTO)
-                .doOnSuccess(response -> log.info("Question retrieved successfully:{}", response))
-                .doOnError(error -> log.error("error in fetching question:{}", error));
+                .doOnError(error -> System.out.println("Question not found "+error))
+                .doOnSuccess(response-> {
+                    System.out.println("Question found  " + response);
+                    ViewCountEvent viewCountEvent = new ViewCountEvent(id, "question", LocalDateTime.now());
+                    kafkaEventProducer.publishViewCountEvent(viewCountEvent);
+                });
     }
 
     @Override
