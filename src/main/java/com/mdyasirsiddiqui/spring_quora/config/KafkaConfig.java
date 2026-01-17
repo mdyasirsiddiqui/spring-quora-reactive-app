@@ -1,10 +1,12 @@
 package com.mdyasirsiddiqui.spring_quora.config;
 
+import com.mdyasirsiddiqui.spring_quora.events.ViewCountEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -14,6 +16,7 @@ import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
+import javax.swing.text.View;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,9 +25,13 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConfig {
 
-    private final String bootstrapServer = "localhost:9092"; // Kafka broker
-    private final String groupId = "my-basic-consumer";
-    public static final String TOPIC_NAME = "view-count-topic";// Consumer group
+    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
+    private String bootstrapServer;
+
+    @Value("${spring.kafka.consumer.group-id:view-count-consumer}")
+    private String groupId;
+
+    public static final String TOPIC_NAME = "view-count-topic";
 
     // Producer Factory (sends messages)
     @Bean
@@ -57,12 +64,42 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
+//    @Bean
+//    public ConsumerFactory<String, ViewCountEvent> consumerFactory()
+//    {
+//        Map<String, Object> config=new HashMap<>();
+//        config.put(ConsumerConfig.GROUP_ID_CONFIG, bootstrapServer);
+//        config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+//        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+//        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+//
+//        JsonDeserializer<ViewCountEvent> deserializer=new JsonDeserializer<>(ViewCountEvent.class);
+//        deserializer.addTrustedPackages("com.mdyasirsiddiqui.spring_quora.events");
+//
+//        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), deserializer);
+//
+//    }
+//    @Bean
+//    public ConsumerFactory<String, ViewCountEvent> consumerFactory() {
+//        Map<String, Object> config = new HashMap<>();
+//        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
+//        config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+//        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+//        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+//
+//        // Specify the target class
+//        JsonDeserializer<ViewCountEvent> deserializer = new JsonDeserializer<>(ViewCountEvent.class);
+//        deserializer.addTrustedPackages("com.mdyasirsiddiqui.spring_quora.events");
+//
+//        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), deserializer);
+//    }
+
     // Listener Container Factory (connects @KafkaListener to consumer)
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setConcurrency(3);
         return factory;
     }
 

@@ -2,6 +2,8 @@ package com.mdyasirsiddiqui.spring_quora.controller;
 
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionRequestDTO;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionResponseDTO;
+import com.mdyasirsiddiqui.spring_quora.models.QuestionElasticDocument;
+import com.mdyasirsiddiqui.spring_quora.repository.QuestionDocumentRepository;
 import com.mdyasirsiddiqui.spring_quora.service.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -61,6 +66,12 @@ public class QuestionController {
                                                           @RequestParam(defaultValue = "10") int size)
     {
             return service.getQuestionsByTag(tags,size);
+    }
+
+    @GetMapping("/elasticSearch")
+    public List<QuestionElasticDocument> searchQuestionByElasticSearch(@RequestParam String query)
+    {
+        return service.searchQuestionsByElasticsearch(query);
     }
 
 }
