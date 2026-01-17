@@ -23,10 +23,11 @@ public class KafkaEventConsumer {
     )
     public void consumeViewCountEvent(ViewCountEvent viewCountEvent)
     {
-        log.info("Updating view Count "+ viewCountEvent.getTargetId());
         questionRepository.findById(viewCountEvent.getTargetId())
                 .flatMap(question->{
-                    question.setViews(question.getViews()+1);
+                    log.info("updating view count for questions {} ",question);
+                    Integer viewCount=question.getViews();
+                    question.setViews(viewCount==null?1:viewCount+1);
                     return questionRepository.save(question);
                     })
                         .subscribe(updatedQues ->{

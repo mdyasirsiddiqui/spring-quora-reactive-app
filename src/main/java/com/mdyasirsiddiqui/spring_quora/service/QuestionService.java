@@ -4,8 +4,10 @@ import com.mdyasirsiddiqui.spring_quora.adapter.QuestionAdapter;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionRequestDTO;
 import com.mdyasirsiddiqui.spring_quora.dto.QuestionResponseDTO;
 import com.mdyasirsiddiqui.spring_quora.events.ViewCountEvent;
+import com.mdyasirsiddiqui.spring_quora.models.QuestionElasticDocument;
 import com.mdyasirsiddiqui.spring_quora.models.Questions;
 import com.mdyasirsiddiqui.spring_quora.producer.KafkaEventProducer;
+import com.mdyasirsiddiqui.spring_quora.repository.QuestionDocumentRepository;
 import com.mdyasirsiddiqui.spring_quora.repository.QuestionRepository;
 import com.mdyasirsiddiqui.spring_quora.utils.CursorUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -25,18 +28,36 @@ public class QuestionService implements IQuestionService {
 
     private final KafkaEventProducer kafkaEventProducer;
 
+    private final IQuestionIndexService iQuestionIndexService;
+
+    private  final QuestionDocumentRepository questionDocumentRepository;
+
     @Override
     public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
-        Questions questions = QuestionAdapter.dtoTOQuestionModel(questionRequestDTO);
-//       Mono<Questions> saved =questionRepository.save(questions);
-//       Mono<QuestionResponseDTO> responseDTO= saved.map(QuestionAdapter::modelToResponseDTO);
-//       return responseDTO;
-        return questionRepository.save(questions)
-                .map(QuestionAdapter::modelToResponseDTO)
-                .doOnSubscribe(response -> System.out.println("Question Created successfully" + response))
-                .doOnError(error -> System.out.println("Error creating question" + error));
+//        Questions questions = QuestionAdapter.dtoTOQuestionModel(questionRequestDTO);
+////       Mono<Questions> saved =questionRepository.save(questions);
+////       Mono<QuestionResponseDTO> responseDTO= saved.map(QuestionAdapter::modelToResponseDTO);
+////       return responseDTO;
+//        return questionRepository.save(questions)
+//                .map(QuestionAdapter::modelToResponseDTO)
+//                .doOnSubscribe(response -> System.out.println("Question Created successfully" + response))
+//                .doOnError(error -> System.out.println("Error creating question" + error));
 
+        /// ---------FOR ELASTIC SEARCH OR CREATING QUESTION INDEX AT CREATING TIME REWRITING METHOD
+
+        Questions question=QuestionAdapter.dtoTOQuestionModel(questionRequestDTO);
+        return questionRepository.save(question)
+                .map(
+                        savedQuestion-> {
+                            iQuestionIndexService.createQuestionIndex(savedQuestion);
+                            return QuestionAdapter.modelToResponseDTO(savedQuestion);
+                        })
+                .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
+                .doOnError(error -> System.out.println("Error creating question: " + error));
     }
+
+
+
 //
 //    @Override
 //    public Mono<QuestionResponseDTO> findQuestionById(String id) {
@@ -94,6 +115,9 @@ public class QuestionService implements IQuestionService {
                 .map(QuestionAdapter::modelToResponseDTO)
                 .doOnNext(response -> log.info("Question found sucessfully:{} ", response))
                 .doOnError(error -> log.info("error in fetching question:{}", error));
+    }
+    public List<QuestionElasticDocument> searchQuestionsByElasticsearch(String query) {
+        return questionDocumentRepository.findByTitleContainingOrContentContaining(query, query);
     }
 }
 
